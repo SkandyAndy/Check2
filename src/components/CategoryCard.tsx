@@ -2,6 +2,8 @@ import type { Category, Task } from '../hooks/useAppStore';
 import { Plus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TaskCard } from './TaskCard';
+import { useAppStore } from '../hooks/useAppStore';
+import { translations } from '../utils/i18n';
 
 type CategoryCardProps = {
   category: Category;
@@ -16,6 +18,8 @@ type CategoryCardProps = {
 };
 
 export function CategoryCard({ category, tasks, isExpanded, onToggleExpand, onAddClick, onTaskToggle, onDeleteClick, onDeleteTask, onEditTask }: CategoryCardProps) {
+  const { language } = useAppStore();
+  const t = translations[language];
   const categoryTasks = tasks.filter(t => t.categoryId === category.id);
   const openTasks = categoryTasks.filter(t => !t.completed);
   const totalTasks = categoryTasks.length;
@@ -75,16 +79,16 @@ export function CategoryCard({ category, tasks, isExpanded, onToggleExpand, onAd
             className="px-4 pb-2"
           >
             {sortedTasks.length === 0 ? (
-              <p className="text-sm text-[var(--app-text-muted)] py-4 text-center">Keine Aufgaben in dieser Kategorie.</p>
+              <p className="text-sm text-[var(--app-text-muted)] py-4 text-center">{t.noTasks}</p>
             ) : (
-              sortedTasks.map(t => (
+              sortedTasks.map(task => (
                 <TaskCard 
-                  key={t.id} 
-                  task={t} 
+                  key={task.id} 
+                  task={task} 
                   category={category} 
                   onToggle={onTaskToggle} 
-                  onDelete={() => onDeleteTask?.(t.id)}
-                  onEdit={() => onEditTask?.(t)}
+                  onDelete={() => onDeleteTask?.(task.id)}
+                  onEdit={() => onEditTask?.(task)}
                 />
               ))
             )}

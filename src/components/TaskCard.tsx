@@ -3,6 +3,7 @@ import type { Task, Category } from '../hooks/useAppStore';
 import { Calendar, CheckSquare, Square, Edit, Trash2, FileText, ListTodo } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../hooks/useAppStore';
+import { translations } from '../utils/i18n';
 
 type TaskCardProps = {
   task: Task;
@@ -14,7 +15,8 @@ type TaskCardProps = {
 
 export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { toggleSubTask } = useAppStore();
+  const { toggleSubTask, language } = useAppStore();
+  const t = translations[language];
 
   const completedSubtasks = task.subTasks?.filter(st => st.completed).length || 0;
   const totalSubtasks = task.subTasks?.length || 0;
@@ -22,9 +24,12 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
   // Format date and time
   let dateText = '';
   if (task.dueDate) {
-    dateText = new Date(task.dueDate).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const locale = language === 'en' ? 'en-US' : 'de-DE';
+    const dateOpts: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+    dateText = new Date(task.dueDate).toLocaleDateString(locale, dateOpts);
+    
     if (task.dueTime) {
-      dateText += ` ${task.dueTime} Uhr`;
+      dateText += ` ${task.dueTime} ${t.clockSuffix}`;
     }
   }
 
@@ -49,7 +54,7 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-wider">
-              {category?.name || 'Unbekannt'}
+              {category?.name || t.unknown}
             </span>
           </div>
 
@@ -100,7 +105,7 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
 
             {totalSubtasks > 0 && (
               <div className="space-y-2 mb-4">
-                <h4 className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-wider mb-2">Checkliste ({completedSubtasks}/{totalSubtasks})</h4>
+                <h4 className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-wider mb-2">{t.checklist} ({completedSubtasks}/{totalSubtasks})</h4>
                 {task.subTasks.map(st => (
                   <button 
                     key={st.id}
@@ -124,7 +129,7 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
                 onClick={(e) => { e.stopPropagation(); onEdit?.(); setIsExpanded(false); }}
                 className="flex flex-1 items-center justify-center gap-2 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)]/20 transition-colors font-medium text-sm"
               >
-                <Edit size={16} /> Bearbeiten
+                <Edit size={16} /> {t.edit}
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); onDelete?.(); }}

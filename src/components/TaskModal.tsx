@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2 } from 'lucide-react';
 import type { Task, Category, SubTask } from '../hooks/useAppStore';
+import { useAppStore } from '../hooks/useAppStore';
+import { translations } from '../utils/i18n';
 
 type TaskModalProps = {
   task?: Task | null;
@@ -12,10 +14,13 @@ type TaskModalProps = {
 };
 
 export function TaskModal({ task, categories, initialCategoryId, onClose, onSave }: TaskModalProps) {
+  const { language } = useAppStore();
+  const t = translations[language];
+
   const [title, setTitle] = useState(task?.title || '');
   const [notes, setNotes] = useState(task?.notes || '');
   const [dueDate, setDueDate] = useState(task?.dueDate || '');
-  const [dueTime, setDueTime] = useState(task?.dueTime || ''); // Empty string by default
+  const [dueTime, setDueTime] = useState(task?.dueTime || ''); 
   const [categoryId, setCategoryId] = useState(task?.categoryId || initialCategoryId || categories[0]?.id || '');
   
   const [subTasks, setSubTasks] = useState<SubTask[]>(task?.subTasks || []);
@@ -41,7 +46,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
       >
         <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
           <h2 className="text-xl font-bold text-[var(--app-text)]">
-            {task ? 'Aufgabe bearbeiten' : 'Neue Aufgabe'}
+            {task ? t.editTaskTitle : t.newTaskTitle}
           </h2>
           <button onClick={onClose} className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 transition-colors">
             <X size={20} className="text-[var(--app-text)]" />
@@ -50,7 +55,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
 
         <div className="p-5 overflow-y-auto flex-1 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">Kategorie</label>
+            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">{t.categoryLbl}</label>
             <select 
               value={categoryId} 
               onChange={e => setCategoryId(e.target.value)}
@@ -65,29 +70,29 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">Titel</label>
+            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">{t.titleLbl}</label>
             <input 
               type="text" 
               value={title} 
               onChange={e => setTitle(e.target.value)}
               className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none"
-              placeholder="Was ist zu tun?"
+              placeholder={t.titlePlaceholder}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">Notizen</label>
+            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">{t.notesLbl}</label>
             <textarea 
               value={notes} 
               onChange={e => setNotes(e.target.value)}
               className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none min-h-[80px]"
-              placeholder="Weitere Details..."
+              placeholder={t.notesPlaceholder}
             />
           </div>
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">Fällig bis:</label>
+              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">{t.dueLbl}</label>
               <input 
                 type="date" 
                 value={dueDate} 
@@ -96,7 +101,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
               />
             </div>
             <div className="w-24">
-              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">Uhrzeit:</label>
+              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1">{t.timeLbl}</label>
               <input 
                 type="time" 
                 value={dueTime} 
@@ -107,7 +112,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
           </div>
 
           <div className="pt-2 border-t border-black/10 dark:border-white/10">
-            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-3">Checkliste</label>
+            <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-3">{t.checklistLbl}</label>
             
             <div className="flex gap-2 mb-3">
               <input 
@@ -116,7 +121,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
                 onChange={e => setNewSubTask(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddSubTask()}
                 className="flex-1 bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none text-sm"
-                placeholder="Neuer Unterpunkt..."
+                placeholder={t.subTaskPlaceholder}
               />
               <button 
                 onClick={handleAddSubTask}
@@ -157,13 +162,13 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
             onClick={onClose}
             className="flex-1 py-3 bg-black/5 dark:bg-white/5 font-medium rounded-xl text-[var(--app-text-muted)] hover:bg-black/10 transition-colors"
           >
-            Abbrechen
+            {t.cancel}
           </button>
           <button 
             onClick={() => onSave({ title, notes, dueDate, dueTime, categoryId, subTasks })}
             className="flex-1 py-3 bg-[var(--color-primary)] font-medium rounded-xl text-[var(--color-bg-dark)] hover:bg-[var(--color-primary-dark)] transition-colors"
           >
-            Speichern
+            {t.save}
           </button>
         </div>
       </motion.div>

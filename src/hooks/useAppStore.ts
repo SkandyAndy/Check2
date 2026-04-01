@@ -22,14 +22,18 @@ export type Category = {
   name: string;
 };
 
+import type { Language } from '../utils/i18n';
+
 type AppState = {
   categories: Category[];
   tasks: Task[];
   theme: 'dark' | 'light';
+  language: Language;
 };
 
 const defaultState: AppState = {
   theme: 'dark',
+  language: 'en',
   categories: [
     { id: 'cat-1', name: 'Willkommen 🚀' },
     { id: 'cat-2', name: 'Projektideen' },
@@ -165,6 +169,10 @@ export function useAppStore() {
     }));
   }, []);
 
+  const setLanguage = useCallback((language: Language) => {
+    setState(prev => ({ ...prev, language }));
+  }, []);
+
   return {
     ...state,
     toggleTheme,
@@ -174,6 +182,7 @@ export function useAppStore() {
     deleteTask,
     toggleSubTask,
     addCategory,
-    deleteCategory
+    deleteCategory,
+    setLanguage
   };
 }

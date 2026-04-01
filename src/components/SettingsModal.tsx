@@ -1,8 +1,9 @@
-import { X, Download, Upload, Cloud } from 'lucide-react';
+import { X, Download, Upload, Cloud, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../hooks/useAppStore';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { translations } from '../utils/i18n';
 
 type SettingsModalProps = {
   onClose: () => void;
@@ -10,6 +11,7 @@ type SettingsModalProps = {
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
   const store = useAppStore();
+  const t = translations[store.language];
 
   const handleExport = async () => {
     try {
@@ -34,9 +36,9 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         
         await Share.share({
           title: 'Check App Backup',
-          text: 'Hier ist dein Backup der Check-App',
+          text: 'Backup check_backup.json',
           url: fileResult.uri,
-          dialogTitle: 'Backup speichern',
+          dialogTitle: 'Backup',
         });
       } catch (nativeError) {
         // Fallback to web download
@@ -44,7 +46,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
       }
       
     } catch (e) {
-      alert('Fehler beim Exportieren');
+      alert(t.exportError);
     }
   };
 
@@ -60,12 +62,11 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         reader.onload = (re) => {
           try {
             const data = JSON.parse(re.target?.result as string);
-            // Replace or merge data (here we just replace for simplicity, or we could merge)
-            alert('Backup erfolgreich geladen! Bitte lade die App neu.');
-            localStorage.setItem('check_app_data_v1', JSON.stringify({ theme: store.theme, ...data }));
+            alert(t.importSuccess);
+            localStorage.setItem('check_app_data_v2', JSON.stringify({ theme: store.theme, language: store.language, ...data }));
             window.location.reload();
           } catch {
-            alert('Dateiformat ungültig.');
+            alert(t.invalidFormat);
           }
         };
         reader.readAsText(file);
@@ -83,7 +84,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         className="bg-[var(--app-card)] w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-[var(--app-text)]">Einstellungen</h2>
+          <h2 className="text-xl font-bold text-[var(--app-text)]">{t.settings}</h2>
           <button onClick={onClose} className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 transition-colors">
             <X size={20} className="text-[var(--app-text)]" />
           </button>
@@ -91,32 +92,54 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 
         <div className="p-5 overflow-y-auto space-y-6">
           <div className="space-y-4">
+            
+            {/* Language Switcher */}
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between">
+              <div className="flex items-center font-bold text-[var(--app-text)]">
+                <Globe size={20} className="mr-2 text-[var(--color-primary)]" /> {t.languageLbl}
+              </div>
+              <div className="flex bg-black/10 dark:bg-white/10 rounded-lg p-1">
+                <button 
+                  onClick={() => store.setLanguage('de')}
+                  className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${store.language === 'de' ? 'bg-[var(--app-card)] shadow-sm text-[var(--app-text)]' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]'}`}
+                >
+                  DE
+                </button>
+                <button 
+                  onClick={() => store.setLanguage('en')}
+                  className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${store.language === 'en' ? 'bg-[var(--app-card)] shadow-sm text-[var(--app-text)]' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]'}`}
+                >
+                  EN
+                </button>
+              </div>
+            </div>
+
             <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
               <div className="flex items-center text-[var(--color-primary)] font-bold mb-2">
-                <Cloud size={20} className="mr-2" /> System-Sicherung (Hintergrund)
+                <Cloud size={20} className="mr-2" /> {t.systemBackupTitle}
               </div>
               <p className="text-sm text-[var(--app-text-muted)] mb-3 leading-relaxed">
-                Diese App arbeitet 100% lokal. Um Datenverlust vorzubeugen, spiegelt dein Android-Gerät die lokalen App-Daten automatisch verschlüsselt in den "App-Daten"-Ordner deines verknüpften Google Drives (für dich unsichtbar). Bei einem Gerätewechsel lädt Android das Profil automatisch herunter.
+                {t.systemBackupDesc}
               </p>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-bold text-[var(--app-text)]">Manuelles Backup (100% Kontrolle)</h3>
+              <h3 className="font-bold text-[var(--app-text)]">{t.manualBackupTitle}</h3>
               <p className="text-xs text-[var(--app-text-muted)] leading-relaxed">
-                Sichere all deine Aufgaben als handfeste Datei. Du wählst im nächsten Schritt genau aus, ob du sie im Downloads-Ordner, in der iCloud oder Drive speichern willst.
+                {t.manualBackupDesc}
               </p>
               <button onClick={handleExport} className="w-full py-3 mt-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 font-bold rounded-xl flex items-center justify-center transition-colors">
-                <Download size={18} className="mr-2" /> Datei manuell speichern (.json)
+                <Download size={18} className="mr-2" /> {t.btnExport}
               </button>
             </div>
 
             <div className="space-y-2 pt-4 border-t border-black/10 dark:border-white/10">
-              <h3 className="font-bold text-[var(--app-text)]">Daten-Wiederherstellung</h3>
+              <h3 className="font-bold text-[var(--app-text)]">{t.restoreTitle}</h3>
               <p className="text-xs text-[var(--app-text-muted)]">
-                Importiere eine zuvor exportierte Backup-Datei. (Überschreibt aktuelle Daten)
+                {t.restoreDesc}
               </p>
               <button onClick={handleImport} className="w-full py-3 mt-2 bg-black/5 dark:bg-white/5 text-[var(--app-text)] hover:bg-black/10 font-bold rounded-xl flex items-center justify-center transition-colors">
-                <Upload size={18} className="mr-2" /> Backup importieren
+                <Upload size={18} className="mr-2" /> {t.btnImport}
               </button>
             </div>
           </div>
