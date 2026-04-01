@@ -31,39 +31,52 @@ type AppState = {
 const defaultState: AppState = {
   theme: 'dark',
   categories: [
-    { id: 'cat-1', name: 'Wohnung' },
-    { id: 'cat-2', name: 'Sonstiges' },
-    { id: 'cat-3', name: 'Uni' },
+    { id: 'cat-1', name: 'Willkommen 🚀' },
+    { id: 'cat-2', name: 'Projektideen' },
+    { id: 'cat-3', name: 'Einkauf' },
   ],
   tasks: [
     {
       id: 't-1',
       categoryId: 'cat-1',
-      title: 'Zimmer saugen',
+      title: 'Tippe mich an, um Details zu sehen!',
+      notes: 'Hey! Willkommen bei Check.\nDiese Aufgabe zeigt dir, wie Notizen aussehen. Hier kannst du alle deine wichtigen Gedanken niederschreiben.\n\nUnd weiter unten siehst du eine Checkliste zum interaktiven Abhaken!',
+      dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+      dueTime: '10:00',
+      completed: false,
+      subTasks: [
+        { id: 'st-1', title: 'Erkunde die App', completed: true },
+        { id: 'st-2', title: 'Erstelle eine neue Kategorie', completed: false },
+        { id: 'st-3', title: 'Schalte in den Dark Mode', completed: false },
+      ]
+    },
+    {
+      id: 't-2',
+      categoryId: 'cat-1',
+      title: 'Wische oder hake mich ab',
       notes: '',
-      dueDate: '2025-11-07',
-      dueTime: null,
+      dueDate: new Date().toISOString().split('T')[0], // Today
+      dueTime: '',
       completed: false,
       subTasks: []
     },
     {
-      id: 't-2',
+      id: 't-3',
       categoryId: 'cat-2',
-      title: 'Gemini Student Abo erstellen',
-      notes: 'Bis spätestens 09.12.2025 hji',
-      dueDate: '2025-11-16',
-      dueTime: '18:00',
+      title: 'Design-Konzept fertigstellen',
+      notes: 'Die Farbpalette (Glassmorphismus) muss noch финаlisiert werden.',
+      dueDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0], // In 3 days
+      dueTime: '15:30',
       completed: false,
       subTasks: [
-        { id: 'st-1', title: 'vhrt', completed: true },
-        { id: 'st-2', title: 'gggh', completed: false },
-        { id: 'st-3', title: 'vgz', completed: true },
+        { id: 'st-4', title: 'Fonts auswählen', completed: false },
+        { id: 'st-5', title: 'Startseite Scribble', completed: false },
       ]
     }
   ]
 };
 
-const STORAGE_KEY = 'check_app_data_v1';
+const STORAGE_KEY = 'check_app_data_v2';
 
 export function useAppStore() {
   const [state, setState] = useState<AppState>(() => {
