@@ -62,9 +62,13 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         reader.onload = (re) => {
           try {
             const data = JSON.parse(re.target?.result as string);
-            alert(t.importSuccess);
-            localStorage.setItem('check_app_data_v2', JSON.stringify({ theme: store.theme, language: store.language, ...data }));
-            window.location.reload();
+            if (data && data.tasks && data.categories) {
+              useAppStore.setState({ tasks: data.tasks, categories: data.categories });
+              alert(t.importSuccess);
+              onClose();
+            } else {
+              throw new Error("Invalid schema");
+            }
           } catch {
             alert(t.invalidFormat);
           }
