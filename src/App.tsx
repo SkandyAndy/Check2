@@ -1,20 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from './hooks/useAppStore';
 import { useNotifications } from './hooks/useNotifications';
 import { TaskCard } from './components/TaskCard';
 import { CategoryCard } from './components/CategoryCard';
 import { TaskModal } from './components/TaskModal';
 import { SettingsModal } from './components/SettingsModal';
+import { DailyPopupModal } from './components/DailyPopupModal';
 import { Plus, Settings, Sun, Moon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Task } from './hooks/useAppStore';
 import { translations } from './utils/i18n';
 
 function App() {
-  const { tasks, categories, theme, language, toggleTheme, toggleTask, addTask, updateTask, deleteTask, addCategory, deleteCategory } = useAppStore();
+  const { tasks, categories, theme, language, toggleTheme, toggleTask, addTask, updateTask, deleteTask, addCategory, deleteCategory, dailyPopupEnabled, dailyPopupTime, lastPopupDate, setLastPopupDate } = useAppStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [taskModalState, setTaskModalState] = useState<{isOpen: boolean, task: Task | null, categoryId?: string}>({ isOpen: false, task: null });
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [showDailyPopup, setShowDailyPopup] = useState(false);
+
+  useEffect(() => {
+    if (!dailyPopupEnabled) return;
+    
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    
+    if (lastPopupDate !== todayStr) {
+      const [hours, minutes] = dailyPopupTime.split(':').map(Number);
+      const scheduledTime = new Date();
+      scheduledTime.setHours(hours, minutes, 0, 0);
+      
+      if (now.getTime() >= scheduledTime.getTime()) {
+        setShowDailyPopup(true);
+      } else {
+        const delay = scheduledTime.getTime() - now.getTime();
+        const timer = setTimeout(() => {
+          if (useAppStore.getState().lastPopupDate !== todayStr) {
+            setShowDailyPopup(true);
+          }
+        }, delay);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [dailyPopupEnabled, dailyPopupTime, lastPopupDate]);
+
+  const handleCloseDailyPopup = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    setLastPopupDate(todayStr);
+    setShowDailyPopup(false);
+  };
 
   const t = translations[language];
 
@@ -140,6 +173,10 @@ function App() {
       </section>
 
       <AnimatePresence>
+        {showDailyPopup && (
+          <DailyPopupModal onClose={handleCloseDailyPopup} />
+        )}
+
         {isSettingsOpen && (
           <SettingsModal onClose={() => setIsSettingsOpen(false)} />
         )}

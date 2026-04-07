@@ -51,6 +51,9 @@ export const translations = {
     importSuccess: 'Backup erfolgreich geladen! Bitte lade die App neu.',
     invalidFormat: 'Dateiformat ungültig.',
     exportError: 'Fehler beim Exportieren',
+    dailyPopupTitle: 'Daily Popup',
+    dailyPopupDesc: 'Zeigt jeden Tag zur gewählten Zeit eine Zusammenfassung an.',
+    dailyPopupTime: 'Uhrzeit',
   },
   en: {
     // App.tsx
@@ -104,6 +107,9 @@ export const translations = {
     importSuccess: 'Backup successfully loaded! Please reload the app.',
     invalidFormat: 'Invalid file format.',
     exportError: 'Error during export',
+    dailyPopupTitle: 'Daily Popup',
+    dailyPopupDesc: 'Shows a daily summary of tasks at the chosen time.',
+    dailyPopupTime: 'Time',
   }
 };
 

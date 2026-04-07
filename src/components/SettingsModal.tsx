@@ -1,4 +1,4 @@
-import { X, Download, Upload, Cloud, Globe } from 'lucide-react';
+import { X, Download, Upload, Cloud, Globe, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../hooks/useAppStore';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -93,6 +93,33 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         <div className="p-5 overflow-y-auto space-y-6">
           <div className="space-y-4">
             
+            {/* Daily Popup */}
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center text-[var(--color-primary)] font-bold">
+                  <Bell size={20} className="mr-2" /> {t.dailyPopupTitle}
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={store.dailyPopupEnabled} onChange={(e) => store.setDailyPopupConfig(e.target.checked, store.dailyPopupTime)} />
+                  <div className="w-11 h-6 bg-black/20 dark:bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                </label>
+              </div>
+              <p className="text-sm text-[var(--app-text-muted)] mb-3 leading-relaxed">
+                {t.dailyPopupDesc}
+              </p>
+              {store.dailyPopupEnabled && (
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-black/10 dark:border-white/10">
+                  <span className="text-sm font-medium text-[var(--app-text)]">{t.dailyPopupTime}</span>
+                  <input 
+                    type="time" 
+                    value={store.dailyPopupTime} 
+                    onChange={(e) => store.setDailyPopupConfig(store.dailyPopupEnabled, e.target.value)}
+                    className="bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-2 text-[var(--app-text)] outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Language Switcher */}
             <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between">
               <div className="flex items-center font-bold text-[var(--app-text)]">
