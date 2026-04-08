@@ -6,6 +6,7 @@ import { CategoryCard } from './components/CategoryCard';
 import { TaskModal } from './components/TaskModal';
 import { SettingsModal } from './components/SettingsModal';
 import { DailyPopupModal } from './components/DailyPopupModal';
+import { useDriveSync } from './hooks/useDriveSync';
 import { Plus, Settings, Sun, Moon, Search, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Task } from './hooks/useAppStore';
@@ -54,6 +55,9 @@ function App() {
 
   // Register automated push notifications based on due dates
   useNotifications(tasks);
+
+  // Google Drive auto-sync (no-op if VITE_GOOGLE_CLIENT_ID not set)
+  useDriveSync();
 
   const openTasks = tasks.filter(t => {
     if (t.completed) return false;

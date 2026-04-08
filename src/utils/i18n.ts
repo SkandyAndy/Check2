@@ -65,6 +65,18 @@ export const translations = {
     previewDaysDesc: 'Zeigt in der Übersicht nur Aufgaben an, die in den nächsten Tagen fällig werden.',
     showAllTasks: 'Alle offenen Aufgaben anzeigen',
     nextXDays: 'Nächste {n} Tage',
+    driveTitle: 'Google Drive Sync',
+    driveDesc: 'Synchronisiere deine Aufgaben automatisch mit Google Drive. So hast du auf jedem Gerät immer den neuesten Stand.',
+    driveConnect: 'Mit Google verbinden',
+    driveDisconnect: 'Verbindung trennen',
+    driveSyncNow: 'Jetzt synchronisieren',
+    driveLastSync: 'Letzter Sync',
+    driveConnected: 'Verbunden',
+    driveNotConnected: 'Nicht verbunden',
+    driveSyncing: 'Synchronisiere...',
+    driveSyncSuccess: 'Erfolgreich synchronisiert!',
+    driveSyncError: 'Sync fehlgeschlagen. Bitte versuche es erneut.',
+    driveNever: 'Noch nie',
   },
   en: {
     // App.tsx
@@ -132,6 +144,18 @@ export const translations = {
     previewDaysDesc: 'Only show tasks in the overview that are due in the next few days.',
     showAllTasks: 'Show all open tasks',
     nextXDays: 'Next {n} days',
+    driveTitle: 'Google Drive Sync',
+    driveDesc: 'Sync your tasks automatically with Google Drive. Always have the latest version on every device.',
+    driveConnect: 'Connect with Google',
+    driveDisconnect: 'Disconnect',
+    driveSyncNow: 'Sync now',
+    driveLastSync: 'Last sync',
+    driveConnected: 'Connected',
+    driveNotConnected: 'Not connected',
+    driveSyncing: 'Syncing...',
+    driveSyncSuccess: 'Synced successfully!',
+    driveSyncError: 'Sync failed. Please try again.',
+    driveNever: 'Never',
   }
 };
 

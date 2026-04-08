@@ -41,6 +41,10 @@ type AppState = {
   previewDays: number;
   showAllTasks: boolean;
 
+  // Google Drive Sync
+  driveConnected: boolean;
+  lastSyncTimestamp: string | null;
+
   // Actions
   toggleTheme: () => void;
   toggleTask: (taskId: string) => void;
@@ -55,6 +59,8 @@ type AppState = {
   setShowAllTasks: (show: boolean) => void;
   setDailyPopupConfig: (enabled: boolean, time: string) => void;
   setLastPopupDate: (date: string) => void;
+  setDriveConnected: (val: boolean) => void;
+  setLastSyncTimestamp: (ts: string | null) => void;
 };
 
 const defaultCategories: Category[] = [
@@ -118,6 +124,8 @@ export const useAppStore = create<AppState>()(
       lastPopupDate: null,
       previewDays: 7, 
       showAllTasks: true,
+      driveConnected: false,
+      lastSyncTimestamp: null,
 
       toggleTheme: () => set((state) => {
         const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
@@ -201,7 +209,10 @@ export const useAppStore = create<AppState>()(
 
       setLastPopupDate: (date) => set({
         lastPopupDate: date
-      })
+      }),
+
+      setDriveConnected: (val) => set({ driveConnected: val }),
+      setLastSyncTimestamp: (ts) => set({ lastSyncTimestamp: ts }),
     }),
     {
       name: STORAGE_KEY,
