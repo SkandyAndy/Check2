@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Task, Category } from '../hooks/useAppStore';
-import { Calendar, CheckSquare, Square, Edit, Trash2, FileText, ListTodo } from 'lucide-react';
+import { Calendar, CheckSquare, Square, Edit, Trash2, FileText, ListTodo, Pin, Repeat } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../hooks/useAppStore';
 import { translations } from '../utils/i18n';
@@ -33,13 +33,38 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
     }
   }
 
+  let isOverdue = false;
+  let isToday = false;
+  
+  if (task.dueDate && !task.completed) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const dDate = new Date(task.dueDate);
+    dDate.setHours(0,0,0,0);
+    
+    if (dDate.getTime() < today.getTime()) {
+      isOverdue = true;
+    } else if (dDate.getTime() === today.getTime()) {
+      isToday = true;
+    }
+  }
+
+  let cardClass = `bg-[var(--app-card)] border-black/5 dark:border-white/5`;
+  if (task.completed) {
+    cardClass = `bg-[var(--app-card)] border-transparent opacity-60`;
+  } else if (isOverdue) {
+    cardClass = `bg-red-500/5 dark:bg-red-500/10 border-red-500/30 dark:border-red-500/20`;
+  } else if (isToday) {
+    cardClass = `bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30 dark:border-[var(--color-primary)]/20`;
+  }
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={!isExpanded ? { scale: 1.01 } : {}}
-      className={`bg-[var(--app-card)] p-4 rounded-xl shadow-sm border ${task.completed ? 'border-transparent opacity-60' : 'border-black/5 dark:border-white/5'} mb-3 overflow-hidden cursor-pointer`}
+      className={`${cardClass} p-4 rounded-xl shadow-sm border mb-3 overflow-hidden cursor-pointer transition-colors`}
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="flex gap-4">
@@ -58,8 +83,10 @@ export function TaskCard({ task, category, onToggle, onDelete, onEdit }: TaskCar
             </span>
           </div>
 
-          <h3 className={`text-lg font-medium leading-tight ${task.completed ? 'line-through text-[var(--app-text-muted)]' : 'text-[var(--app-text)]'}`}>
-            {task.title}
+          <h3 className={`text-lg font-medium leading-tight flex items-center gap-2 ${task.completed ? 'line-through text-[var(--app-text-muted)]' : 'text-[var(--app-text)]'}`}>
+            {task.isPinned && <Pin size={18} className="text-red-500 fill-red-500 flex-shrink-0" />}
+            <span className="truncate">{task.title}</span>
+            {task.recurring && task.recurring !== 'none' && <Repeat size={14} className="text-[var(--app-text-muted)] opacity-60 flex-shrink-0" />}
           </h3>
 
           {/* Compact Meta Row */}

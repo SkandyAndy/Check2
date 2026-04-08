@@ -6,17 +6,18 @@ import { CategoryCard } from './components/CategoryCard';
 import { TaskModal } from './components/TaskModal';
 import { SettingsModal } from './components/SettingsModal';
 import { DailyPopupModal } from './components/DailyPopupModal';
-import { Plus, Settings, Sun, Moon } from 'lucide-react';
+import { Plus, Settings, Sun, Moon, Search, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Task } from './hooks/useAppStore';
 import { translations } from './utils/i18n';
 
 function App() {
-  const { tasks, categories, theme, language, toggleTheme, toggleTask, addTask, updateTask, deleteTask, addCategory, deleteCategory, dailyPopupEnabled, dailyPopupTime, lastPopupDate, setLastPopupDate } = useAppStore();
+  const { tasks, categories, theme, language, toggleTheme, toggleTask, addTask, updateTask, deleteTask, addCategory, deleteCategory, dailyPopupEnabled, dailyPopupTime, lastPopupDate, setLastPopupDate, previewDays, showAllTasks } = useAppStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [taskModalState, setTaskModalState] = useState<{isOpen: boolean, task: Task | null, categoryId?: string}>({ isOpen: false, task: null });
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDailyPopup, setShowDailyPopup] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!dailyPopupEnabled) return;
@@ -54,7 +55,34 @@ function App() {
   // Register automated push notifications based on due dates
   useNotifications(tasks);
 
-  const openTasks = tasks.filter(t => !t.completed).sort((a, b) => {
+  const openTasks = tasks.filter(t => {
+    if (t.completed) return false;
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      if (!t.title.toLowerCase().includes(q) && !t.notes.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+
+    // Preview filter
+    if (!showAllTasks && t.dueDate) {
+      const taskDate = new Date(t.dueDate);
+      taskDate.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const diffDays = Math.round((taskDate.getTime() - today.getTime()) / 86400000);
+      
+      // If previewDays is 0, only show tasks due <= today
+      return diffDays <= previewDays;
+    }
+    return true;
+  }).sort((a, b) => {
+    // Pinned first
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+
     const timeA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
     const timeB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
     if (!timeA && !timeB) return b.id.localeCompare(a.id);
@@ -91,8 +119,15 @@ function App() {
 
       <section className="bg-[var(--app-card)] p-4 rounded-xl shadow-sm border border-black/5 dark:border-white/5 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-[var(--app-text)] leading-tight whitespace-pre-line">{t.openTasksTitle}</h2>
+          <h2 className="text-xl font-bold text-[var(--app-text)] leading-snug whitespace-pre-line">
+            {(!showAllTasks && !searchQuery) ? (
+               previewDays === 0
+                 ? t.openTasksTitle.replace('\n', ' ') + `\n(${t.nextXDays.replace('{n}', '0')})`
+                 : t.openTasksTitle.replace('\n', ' ') + `\n(${t.nextXDays.replace('{n}', previewDays.toString())})`
+            ) : t.openTasksTitle}
+          </h2>
           <div className="flex items-center gap-3">
+
 
             <div className="bg-black/5 dark:bg-white/5 text-[var(--app-text-muted)] text-sm font-bold w-12 h-12 flex flex-col items-center justify-center rounded-full">
               <span className="leading-none">{openTasks.length}</span>
@@ -127,6 +162,28 @@ function App() {
           <p className="text-center text-[var(--app-text-muted)] py-4">{t.allDone}</p>
         )}
       </section>
+
+      {/* Search Bar */}
+      <div className="mb-6 relative">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-text-muted)]">
+          <Search size={18} />
+        </div>
+        <input 
+          type="text" 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t.searchPlaceholder}
+          className="w-full bg-[var(--app-card)] border border-black/5 dark:border-white/5 rounded-xl py-3 pl-11 pr-10 text-[var(--app-text)] outline-none focus:border-[var(--color-primary)] transition-all"
+        />
+        {searchQuery && (
+          <button 
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--app-text-muted)] hover:text-[var(--app-text)]"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
 
       <section>
         <motion.div layout className="space-y-3">

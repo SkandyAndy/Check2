@@ -1,4 +1,4 @@
-import { X, Download, Upload, Cloud, Globe, Bell } from 'lucide-react';
+import { X, Download, Upload, Cloud, Globe, Bell, CalendarRange } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../hooks/useAppStore';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -122,6 +122,38 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                   />
                 </div>
               )}
+            </div>
+
+            {/* Task Preview Setting */}
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center text-[var(--color-primary)] font-bold">
+                  <CalendarRange size={20} className="mr-2" /> {t.previewDaysTitle}
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={store.showAllTasks} onChange={(e) => store.setShowAllTasks(e.target.checked)} />
+                  <div className="w-11 h-6 bg-black/20 dark:bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                </label>
+              </div>
+              <p className="text-sm text-[var(--app-text-muted)] mb-3 leading-relaxed">
+                {t.previewDaysDesc}
+              </p>
+              
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-black/10 dark:border-white/10">
+                <span className="text-sm font-medium text-[var(--app-text)]">{t.showAllTasks}</span>
+              </div>
+              
+              <div className={`mt-4 flex items-center justify-between transition-opacity ${store.showAllTasks ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
+                <span className="text-sm font-bold text-[var(--app-text)]">{t.nextXDays.replace('{n}', store.previewDays.toString())}</span>
+                <input 
+                    type="range" 
+                    min="0" max="30" step="1" 
+                    disabled={store.showAllTasks}
+                    value={store.previewDays} 
+                    onChange={(e) => store.setPreviewDays(parseInt(e.target.value))}
+                    className="w-1/2 accent-[var(--color-primary)]"
+                />
+              </div>
             </div>
 
             {/* Language Switcher */}

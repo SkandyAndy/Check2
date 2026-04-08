@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Repeat, Pin } from 'lucide-react';
 import type { Task, Category, SubTask } from '../hooks/useAppStore';
 import { useAppStore } from '../hooks/useAppStore';
 import { translations } from '../utils/i18n';
@@ -25,6 +25,8 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
   
   const [subTasks, setSubTasks] = useState<SubTask[]>(task?.subTasks || []);
   const [newSubTask, setNewSubTask] = useState('');
+  const [recurring, setRecurring] = useState<Task['recurring']>(task?.recurring || 'none');
+  const [isPinned, setIsPinned] = useState(task?.isPinned || false);
 
   const handleAddSubTask = () => {
     if (newSubTask.trim().length === 0) return;
@@ -61,7 +63,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
               onChange={e => setCategoryId(e.target.value)}
               className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none"
             >
-              {categories.map(c => (
+              {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                 <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-800 text-black dark:text-white">
                   {c.name}
                 </option>
@@ -108,6 +110,35 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
                 onChange={e => setDueTime(e.target.value)}
                 className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none"
               />
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-2">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1 flex items-center">
+                <Repeat size={14} className="mr-1" /> {t.recurringLbl}
+              </label>
+              <select 
+                value={recurring} 
+                onChange={e => setRecurring(e.target.value as Task['recurring'])}
+                className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-[var(--color-primary)] rounded-lg p-3 text-[var(--app-text)] outline-none text-sm"
+              >
+                <option value="none" className="bg-white dark:bg-neutral-800">{t.none}</option>
+                <option value="daily" className="bg-white dark:bg-neutral-800">{t.daily}</option>
+                <option value="weekly" className="bg-white dark:bg-neutral-800">{t.weekly}</option>
+                <option value="monthly" className="bg-white dark:bg-neutral-800">{t.monthly}</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-[var(--app-text-muted)] mb-1 flex items-center">
+                <Pin size={14} className="mr-1" /> {t.prioritize}
+              </label>
+              <button 
+                onClick={() => setIsPinned(!isPinned)}
+                className={`w-full flex items-center justify-center p-3 rounded-lg border transition-colors ${isPinned ? 'bg-red-500/10 border-red-500 text-red-500' : 'bg-black/5 dark:bg-white/5 border-transparent text-[var(--app-text-muted)]'}`}
+              >
+                <Pin size={20} className={isPinned ? 'fill-red-500' : ''} />
+              </button>
             </div>
           </div>
 
@@ -165,7 +196,7 @@ export function TaskModal({ task, categories, initialCategoryId, onClose, onSave
             {t.cancel}
           </button>
           <button 
-            onClick={() => onSave({ title, notes, dueDate, dueTime, categoryId, subTasks })}
+            onClick={() => onSave({ title, notes, dueDate, dueTime, categoryId, subTasks, recurring, isPinned })}
             className="flex-1 py-3 bg-[var(--color-primary)] font-medium rounded-xl text-[var(--color-bg-dark)] hover:bg-[var(--color-primary-dark)] transition-colors"
           >
             {t.save}

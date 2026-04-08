@@ -33,6 +33,13 @@ export const translations = {
     subTaskPlaceholder: 'Neuer Unterpunkt...',
     cancel: 'Abbrechen',
     save: 'Speichern',
+    recurringLbl: 'Wiederholung',
+    none: 'Keine',
+    daily: 'Täglich',
+    weekly: 'Wöchentlich',
+    monthly: 'Monatlich',
+    prioritize: 'Priorität (Anheften)',
+    searchPlaceholder: 'Aufgaben suchen...',
 
     // SettingsModal.tsx
     settings: 'Einstellungen',
@@ -48,12 +55,16 @@ export const translations = {
     restoreTitle: 'Daten-Wiederherstellung',
     restoreDesc: 'Importiere eine zuvor exportierte Backup-Datei. (Überschreibt aktuelle Daten)',
     btnImport: 'Backup importieren',
-    importSuccess: 'Backup erfolgreich geladen! Bitte lade die App neu.',
+    importSuccess: 'Backup erfolgreich geladen!',
     invalidFormat: 'Dateiformat ungültig.',
     exportError: 'Fehler beim Exportieren',
     dailyPopupTitle: 'Daily Popup',
     dailyPopupDesc: 'Zeigt jeden Tag zur gewählten Zeit eine Zusammenfassung an.',
     dailyPopupTime: 'Uhrzeit',
+    previewDaysTitle: 'Aufgaben-Vorschau',
+    previewDaysDesc: 'Zeigt in der Übersicht nur Aufgaben an, die in den nächsten Tagen fällig werden.',
+    showAllTasks: 'Alle offenen Aufgaben anzeigen',
+    nextXDays: 'Nächste {n} Tage',
   },
   en: {
     // App.tsx
@@ -89,6 +100,13 @@ export const translations = {
     subTaskPlaceholder: 'New subtask...',
     cancel: 'Cancel',
     save: 'Save',
+    recurringLbl: 'Recurring',
+    none: 'None',
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    prioritize: 'Prioritize (Pin)',
+    searchPlaceholder: 'Search tasks...',
 
     // SettingsModal.tsx
     settings: 'Settings',
@@ -104,12 +122,16 @@ export const translations = {
     restoreTitle: 'Data Restoration',
     restoreDesc: 'Import a previously exported backup file. (Overwrites current data)',
     btnImport: 'Import backup',
-    importSuccess: 'Backup successfully loaded! Please reload the app.',
+    importSuccess: 'Backup successfully loaded!',
     invalidFormat: 'Invalid file format.',
     exportError: 'Error during export',
     dailyPopupTitle: 'Daily Popup',
     dailyPopupDesc: 'Shows a daily summary of tasks at the chosen time.',
     dailyPopupTime: 'Time',
+    previewDaysTitle: 'Task Preview',
+    previewDaysDesc: 'Only show tasks in the overview that are due in the next few days.',
+    showAllTasks: 'Show all open tasks',
+    nextXDays: 'Next {n} days',
   }
 };
 

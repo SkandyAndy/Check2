@@ -17,6 +17,8 @@ export type Task = {
   dueTime: string | null; // e.g., "14:30"
   completed: boolean;
   subTasks: SubTask[];
+  recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
+  isPinned?: boolean;
 };
 
 export type Category = {
@@ -34,6 +36,10 @@ type AppState = {
   dailyPopupEnabled: boolean;
   dailyPopupTime: string;
   lastPopupDate: string | null;
+  
+  // View Settings
+  previewDays: number;
+  showAllTasks: boolean;
 
   // Actions
   toggleTheme: () => void;
@@ -45,6 +51,8 @@ type AppState = {
   addCategory: (name: string) => void;
   deleteCategory: (categoryId: string) => void;
   setLanguage: (language: Language) => void;
+  setPreviewDays: (days: number) => void;
+  setShowAllTasks: (show: boolean) => void;
   setDailyPopupConfig: (enabled: boolean, time: string) => void;
   setLastPopupDate: (date: string) => void;
 };
@@ -108,6 +116,8 @@ export const useAppStore = create<AppState>()(
       dailyPopupEnabled: false,
       dailyPopupTime: '09:00',
       lastPopupDate: null,
+      previewDays: 7, 
+      showAllTasks: true,
 
       toggleTheme: () => set((state) => {
         const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
@@ -119,9 +129,30 @@ export const useAppStore = create<AppState>()(
         return { theme: nextTheme };
       }),
 
-      toggleTask: (taskId) => set((state) => ({
-        tasks: state.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
-      })),
+      toggleTask: (taskId) => set((state) => {
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return state;
+
+        if (!task.completed && task.recurring && task.recurring !== 'none' && task.dueDate) {
+          // Recurring logic: Update date and reset status
+          const nextDate = new Date(task.dueDate);
+          if (task.recurring === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+          if (task.recurring === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+          if (task.recurring === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+
+          return {
+            tasks: state.tasks.map(t => t.id === taskId ? {
+              ...t,
+              dueDate: nextDate.toISOString().split('T')[0],
+              subTasks: t.subTasks.map(st => ({ ...st, completed: false }))
+            } : t)
+          };
+        }
+
+        return {
+          tasks: state.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
+        };
+      }),
 
       addTask: (task) => set((state) => ({
         tasks: [...state.tasks, {
@@ -160,6 +191,8 @@ export const useAppStore = create<AppState>()(
       })),
 
       setLanguage: (language) => set({ language }),
+      setPreviewDays: (days) => set({ previewDays: days }),
+      setShowAllTasks: (show) => set({ showAllTasks: show }),
 
       setDailyPopupConfig: (enabled, time) => set({
         dailyPopupEnabled: enabled,
