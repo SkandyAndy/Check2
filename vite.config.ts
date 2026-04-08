@@ -8,4 +8,7 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  // When deployed to GitHub Pages the app lives at /Check2/ — in dev it's just /
+  base: process.env.GITHUB_PAGES === 'true' ? '/Check2/' : '/',
 })
+
