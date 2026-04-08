@@ -106,6 +106,23 @@ export function signOut(): void {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
+/**
+ * Native Android path: inject the access token obtained from SocialLogin.
+ * The GIS library is not used in this case.
+ */
+export function setExternalToken(accessToken: string, expiresInSeconds = 3500): void {
+  currentToken = {
+    access_token: accessToken,
+    expires_at: Date.now() + expiresInSeconds * 1000,
+  };
+  // Do NOT persist to localStorage – native tokens have their own lifecycle
+}
+
+export function clearExternalToken(): void {
+  currentToken = null;
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
 // ─── Silent re-auth (no popup) ───────────────────────────────────────────────
 
 export async function silentRefresh(): Promise<boolean> {
