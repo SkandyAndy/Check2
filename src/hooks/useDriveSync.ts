@@ -1,10 +1,13 @@
 /**
  * useDriveSync – platform-aware Google Drive sync hook
  *
- * Web  → Google Identity Services (GIS) popup OAuth
- * Android → Chrome Custom Tabs (PKCE) via nativeOAuthService
+ * Web  → Google Identity Services (GIS) popup OAuth + token restoration from localStorage
+ * Android → Chrome Custom Tabs (Implicit Flow) + token persisted in localStorage
  *
- * Both paths use the same Drive REST API after auth.
+ * On both platforms:
+ * - Startup: restores saved token → syncs automatically if Drive is newer
+ * - Changes: auto-uploads after 5 seconds of inactivity
+ * - Token expiry: marks disconnected, user must re-authenticate
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -18,7 +21,7 @@ const DEBOUNCE_MS = 5_000;
 
 const isNative = Capacitor.isNativePlatform();
 
-// ── Startup sync ──────────────────────────────────────────────────────────────
+// ── Startup sync: pull from Drive if newer than local ────────────────────────
 
 async function performStartupSync(): Promise<void> {
   try {
@@ -40,7 +43,9 @@ async function performStartupSync(): Promise<void> {
         });
       }
     }
-  } catch { /* non-critical */ }
+  } catch {
+    /* non-critical – keep local data */
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,15 +54,25 @@ export function useDriveSync() {
   const uploadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialized = useRef(false);
 
-  // ── Init + startup sync on web ────────────────────────────────────────────
+  // ── Startup: restore token + sync ─────────────────────────────────────────
   useEffect(() => {
     if (!CLIENT_ID) return;
     let cancelled = false;
 
     (async () => {
       try {
-        if (!isNative) {
-          // Web: init GIS and restore stored token
+        if (isNative) {
+          // Android: try to restore saved token from localStorage
+          const restored = Drive.restoreTokenFromStorage();
+          if (restored) {
+            useAppStore.getState().setDriveConnected(true);
+            if (!cancelled) await performStartupSync();
+          } else {
+            // Token expired or never set — user needs to sign in again
+            useAppStore.getState().setDriveConnected(false);
+          }
+        } else {
+          // Web: init GIS (it restores the stored token internally)
           await Drive.initGoogleAuth(CLIENT_ID);
           if (Drive.isSignedIn()) {
             useAppStore.getState().setDriveConnected(true);
@@ -65,9 +80,6 @@ export function useDriveSync() {
           } else {
             useAppStore.getState().setDriveConnected(false);
           }
-        } else {
-          // Native Android: we don't auto-sign-in; user presses the button
-          useAppStore.getState().setDriveConnected(false);
         }
       } catch {
         useAppStore.getState().setDriveConnected(false);
@@ -79,7 +91,7 @@ export function useDriveSync() {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Auto-upload after changes ─────────────────────────────────────────────
+  // ── Auto-upload after every data change ───────────────────────────────────
   useEffect(() => {
     if (!CLIENT_ID) return;
 
@@ -94,7 +106,15 @@ export function useDriveSync() {
         try {
           await Drive.uploadBackup({ tasks, categories });
           useAppStore.getState().setLastSyncTimestamp(new Date().toISOString());
-        } catch { /* silent */ }
+        } catch (e) {
+          // If upload fails due to expired token, mark as disconnected
+          const msg = (e as Error)?.message ?? '';
+          if (msg.includes('401') || msg.includes('Not authenticated')) {
+            Drive.clearExternalToken();
+            useAppStore.getState().setDriveConnected(false);
+          }
+          /* other errors: silent, will retry on next change */
+        }
       }, DEBOUNCE_MS);
     });
 
@@ -109,17 +129,15 @@ export function useDriveSync() {
     if (!CLIENT_ID) throw new Error('Google Client ID not configured');
 
     if (isNative) {
-      // Android: open Chrome Custom Tab with PKCE OAuth
       const token = await nativeOAuthSignIn(CLIENT_ID);
-      Drive.setExternalToken(token);
+      Drive.setExternalToken(token); // persists to localStorage
     } else {
-      // Web: GIS popup
       await Drive.signIn();
     }
 
     useAppStore.getState().setDriveConnected(true);
 
-    // On first connect: pull Drive if newer, otherwise push local data
+    // On connect: pull Drive if newer, otherwise push local data up
     const driveModified = await Drive.getBackupModifiedTime();
     const { lastSyncTimestamp, tasks, categories } = useAppStore.getState();
     const driveIsNewer =
@@ -145,11 +163,8 @@ export function useDriveSync() {
 
   // ── Disconnect ────────────────────────────────────────────────────────────
   const disconnectDrive = useCallback(() => {
-    if (isNative) {
-      Drive.clearExternalToken();
-    } else {
-      Drive.signOut();
-    }
+    if (!isNative) Drive.signOut();
+    Drive.clearExternalToken();
     useAppStore.getState().setDriveConnected(false);
     useAppStore.getState().setLastSyncTimestamp(null);
   }, []);

@@ -107,15 +107,37 @@ export function signOut(): void {
 }
 
 /**
- * Native Android path: inject the access token obtained from SocialLogin.
- * The GIS library is not used in this case.
+ * Native Android path: inject the access token obtained via OAuth.
+ * Persists to localStorage so it survives app restarts (within the 1-hour validity).
  */
 export function setExternalToken(accessToken: string, expiresInSeconds = 3500): void {
   currentToken = {
     access_token: accessToken,
     expires_at: Date.now() + expiresInSeconds * 1000,
   };
-  // Do NOT persist to localStorage – native tokens have their own lifecycle
+  // Persist so the token survives settings close / app restart
+  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(currentToken));
+}
+
+/**
+ * Restore a previously saved native token from localStorage.
+ * Returns true if a valid (non-expired) token was found.
+ */
+export function restoreTokenFromStorage(): boolean {
+  try {
+    const saved = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!saved) return false;
+    const parsed: TokenData = JSON.parse(saved);
+    if (parsed.expires_at > Date.now()) {
+      currentToken = parsed;
+      return true;
+    }
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    return false;
+  } catch {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    return false;
+  }
 }
 
 export function clearExternalToken(): void {
