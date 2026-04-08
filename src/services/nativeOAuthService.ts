@@ -17,7 +17,7 @@
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
 
-const REDIRECT_URI = 'com.check.app://auth';
+const REDIRECT_URI = 'https://skandyandy.github.io/Check2/auth/';
 const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
