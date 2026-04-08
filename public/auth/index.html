@@ -47,32 +47,43 @@
 
   <script>
     (function () {
-      var params = new URLSearchParams(window.location.search);
-      var code  = params.get('code');
-      var error = params.get('error');
+      // Google returns token in the URL *fragment* (#access_token=...) for implicit flow
+      var hash = window.location.hash.substring(1); // strip leading #
+      var query = window.location.search.substring(1); // fallback: query string (?error=...)
+
+      var hashParams  = new URLSearchParams(hash);
+      var queryParams = new URLSearchParams(query);
+
+      var token = hashParams.get('access_token');
+      var error = queryParams.get('error') || hashParams.get('error');
 
       if (error) {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('title').textContent = 'Fehler bei der Anmeldung';
-        document.getElementById('msg').textContent = 'Bitte schliesse dieses Fenster und versuche es erneut.';
+        document.getElementById('msg').textContent = 'Bitte schliesse dieses Fenster und versuche es erneut. (' + error + ')';
+        // Also notify the app so it can reset the loading state
+        setTimeout(function () {
+          window.location.href = 'com.check.app://auth?error=' + encodeURIComponent(error);
+        }, 500);
         return;
       }
 
-      if (code) {
-        // Redirect to the app via deep link
-        var appUrl = 'com.check.app://auth?code=' + encodeURIComponent(code);
+      if (token) {
+        // Redirect to app deep link with the token as query param (not fragment)
+        var appUrl = 'com.check.app://auth?access_token=' + encodeURIComponent(token);
         window.location.href = appUrl;
 
-        // Fallback message after 3s (e.g. opened in browser, not Android)
+        // Fallback message (e.g. opened in desktop browser)
         setTimeout(function () {
           document.getElementById('spinner').style.display = 'none';
           document.getElementById('title').textContent = 'Anmeldung abgeschlossen ✓';
           document.getElementById('msg').textContent = 'Du kannst dieses Fenster schliessen.';
         }, 3000);
       } else {
+        // No token and no error – likely opened directly in browser without OAuth params
         document.getElementById('spinner').style.display = 'none';
-        document.getElementById('title').textContent = 'Unbekannter Fehler';
-        document.getElementById('msg').textContent = 'Kein Autorisierungscode erhalten.';
+        document.getElementById('title').textContent = 'Kein Token erhalten';
+        document.getElementById('msg').textContent = 'Bitte verwende die Check App, um dich anzumelden.';
       }
     })();
   </script>
