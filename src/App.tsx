@@ -6,6 +6,7 @@ import { CategoryCard } from './components/CategoryCard';
 import { TaskModal } from './components/TaskModal';
 import { SettingsModal } from './components/SettingsModal';
 import { DailyPopupModal } from './components/DailyPopupModal';
+import { SyncConflictModal } from './components/SyncConflictModal';
 import { useDriveSync } from './hooks/useDriveSync';
 import { Plus, Settings, Sun, Moon, Search, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -57,7 +58,7 @@ function App() {
   useNotifications(tasks);
 
   // Google Drive auto-sync (no-op if VITE_GOOGLE_CLIENT_ID not set)
-  useDriveSync();
+  const { conflict, resolveConflict } = useDriveSync();
 
   const openTasks = tasks.filter(t => {
     if (t.completed) return false;
@@ -234,6 +235,15 @@ function App() {
       </section>
 
       <AnimatePresence>
+        {conflict && (
+          <SyncConflictModal
+            driveTimestamp={conflict.driveTimestamp}
+            localTimestamp={conflict.localTimestamp}
+            onKeepLocal={() => resolveConflict('local')}
+            onUseCloud={() => resolveConflict('drive')}
+          />
+        )}
+
         {showDailyPopup && (
           <DailyPopupModal onClose={handleCloseDailyPopup} />
         )}

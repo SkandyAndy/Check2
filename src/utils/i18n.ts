@@ -77,6 +77,14 @@ export const translations = {
     driveSyncSuccess: 'Erfolgreich synchronisiert!',
     driveSyncError: 'Sync fehlgeschlagen. Bitte versuche es erneut.',
     driveNever: 'Noch nie',
+
+    // SyncConflictModal.tsx
+    conflictTitle: 'Lokale Änderungen vorhanden',
+    conflictDesc: 'Du hast offline Änderungen gemacht, während auf Google Drive neuere Daten liegen. Was soll behalten werden?',
+    conflictLocal: 'Lokal',
+    conflictDrive: 'Google Drive',
+    conflictKeepLocal: 'Meine Änderungen behalten',
+    conflictUseDrive: 'Drive-Daten verwenden',
   },
   en: {
     // App.tsx
@@ -156,6 +164,14 @@ export const translations = {
     driveSyncSuccess: 'Synced successfully!',
     driveSyncError: 'Sync failed. Please try again.',
     driveNever: 'Never',
+
+    // SyncConflictModal.tsx
+    conflictTitle: 'Unsaved local changes',
+    conflictDesc: 'You made changes while offline, but Google Drive also has newer data. Which version do you want to keep?',
+    conflictLocal: 'Local',
+    conflictDrive: 'Google Drive',
+    conflictKeepLocal: 'Keep my changes',
+    conflictUseDrive: 'Use Drive data',
   }
 };
 
